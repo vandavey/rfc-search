@@ -1,20 +1,18 @@
-#!/usr/bin/env python3
 #
-#  rfc_spec.py
-#  -----------
-#  Source file for the RFC specification metadata class.
+#  spec_metadata.py
+#  ----------------
+#  RFC specification metadata module.
 #
 import json
-from typing import Dict
 
 
-class RfcSpec(object):
+class SpecMetadata:
     """
-    RFC specification entry metadata.
+    RFC specification metadata.
     """
     def __init__(self,
-                 id: int = 0,
-                 files: Dict[str, str] = None,
+                 rfc_id: int = 0,
+                 files: dict[str, str] = None,
                  title: str = str(),
                  authors: str = str(),
                  date: str = str(),
@@ -25,8 +23,8 @@ class RfcSpec(object):
         """
         Initialize the object.
         """
-        self.Id: int = id
-        self.Files: Dict[str, str] = files if files else {}
+        self.Id: int = rfc_id
+        self.Files: dict[str, str] = files if files else {}
         self.Title: str = title
         self.Authors: str = authors
         self.Date: str = date
@@ -37,12 +35,12 @@ class RfcSpec(object):
 
     def __repr__(self) -> str:
         """
-        Get the string representation of the specification.
+        Get the string representation of the specification metadata.
         """
         return f'"rfc{self.Id}": {self.json()}'
 
     def json(self, indent: int = 4) -> str:
         """
-        Get the RFC specification as a JSON string.
+        Get the specification metadata as a JSON string.
         """
         return json.dumps(self.__dict__, indent=abs(indent))

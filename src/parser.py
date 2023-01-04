@@ -1,10 +1,12 @@
-#!/usr/bin/env python3
 #
 #  parser.py
 #  ---------
-#  Source file for the command-line argument parser class.
+#  Command-line argument parser module.
 #
-class Parser(object):
+from argparse import ArgumentParser
+
+
+class Parser:
     """
     Command-line argument parser.
     """
@@ -12,4 +14,16 @@ class Parser(object):
         """
         Initialize the object.
         """
-        pass
+        raise NotImplementedError(self.__init__)
+
+    def help(self) -> str:
+        """
+        Get the application help information.
+        """
+        raise NotImplementedError(self.help)
+
+    def usage(self) -> str:
+        """
+        Get the application usage information.
+        """
+        raise NotImplementedError(self.usage)

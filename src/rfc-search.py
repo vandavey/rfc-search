@@ -2,13 +2,13 @@
 #
 #  rfc-search.py
 #  -------------
-#  Source file for the application entry point.
+#  Application entry point script.
 #
 def main() -> None:
     """
     Application startup function.
     """
-    pass
+    raise NotImplementedError(main)
 
 
 # Static application entry point
