@@ -1,7 +1,7 @@
 # rfc-search
 
 <div>
-    <a href="https://en.cppreference.com/w/cpp/20">
+    <a href="https://www.python.org/downloads/release/python-3110">
         <img src="https://img.shields.io/badge/python-v3.11-3571a3" alt="python-311">
     </a>
     <a href="https://github.com/vandavey/rfc-search/pulls">

@@ -12,13 +12,13 @@ class RfcFieldName(enum.StrEnum):
     """
     RFC metadata field name enumeration type.
     """
-    ID: str = "Number"
-    FILES: str = "Files"
-    TITLE: str = "Title"
-    AUTHORS: str = "Authors"
-    DATE: str = "Date"
-    MORE_INFO: str = "More Info"
-    STATUS: str = "Status"
+    ID = "Number"
+    FILES = "Files"
+    TITLE = "Title"
+    AUTHORS = "Authors"
+    DATE = "Date"
+    MORE_INFO = "More Info"
+    STATUS = "Status"
 
 
 @enum.unique
@@ -26,13 +26,13 @@ class RfcFieldPos(enum.IntEnum):
     """
     RFC metadata field position enumeration type.
     """
-    ID: int = 0
-    FILES: int = 1
-    TITLE: int = 2
-    AUTHORS: int = 3
-    DATE: int = 4
-    MORE_INFO: int = 5
-    STATUS: int = 6
+    ID = 0
+    FILES = 1
+    TITLE = 2
+    AUTHORS = 3
+    DATE = 4
+    MORE_INFO = 5
+    STATUS = 6
 
 
 def valid_url(url: str) -> bool:
