@@ -1,8 +1,6 @@
-#
-#  query_params.py
-#  ---------------
-#  HTTP RFC specification lookup query parameters module.
-#
+"""
+HTTP RFC specification lookup query parameters module.
+"""
 from datetime import datetime
 from .utils import RfcFieldName
 
@@ -18,7 +16,7 @@ class QueryParams:
                  title: str = "",
                  page: int = 0,
                  sort_by: RfcFieldName = RfcFieldName.ID,
-                 sort_dir: str = "ASC"):
+                 sort_dir: str = "ASC") -> None:
         """
         Initialize the object.
         """

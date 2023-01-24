@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-#
-#  rfc-search.py
-#  -------------
-#  Application entry point script.
-#
+"""
+Application entry point script.
+"""
+import console  # type: ignore
+
+
 def main() -> None:
     """
     Application startup function.
     """
+    console.setup_console()
     raise NotImplementedError(main)
 
 

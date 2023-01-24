@@ -1,8 +1,6 @@
-#
-#  crawler.py
-#  ----------
-#  RFC specification web crawler module.
-#
+"""
+RFC specification web crawler module.
+"""
 import requests
 from requests import Response
 from . import utils
@@ -14,7 +12,7 @@ class Crawler:
     """
     RFC specification web crawler.
     """
-    def __init__(self, params: QueryParams):
+    def __init__(self, params: QueryParams) -> None:
         """
         Initialize the object.
         """

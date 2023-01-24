@@ -20,13 +20,13 @@ param (
     [string[]] $Path
 )
 
-# Declare globals and validate prerequisites
+# Define global variables and validate prerequisites
 begin {
     if (-not [RuntimeInformation]::IsOSPlatform([OSPlatform]::Windows)) {
         throw "This script only supports Windows operating Systems"
     }
 
-    $PathList = @()
+    $MypyArgs = @()
     $ExePath = $(where.exe "mypy.exe" 2> $null)
 
     if (-not $ExePath) {
@@ -38,32 +38,30 @@ begin {
     }
 }
 
-# Process all the pipeline input
+# Process the pipeline input if available
 process {
     if ($Path) {
         if (-not (Test-Path $Path)) {
             throw "Invalid file path: '${Path}'"
         }
-        $PathList += $Path    
+        $MypyArgs += $Path
     }
 }
 
 # Run mypy subprocess to perform static type checking
 end {
-    $MypyArgs = @{
-        ArgumentList = $PathList + @(
-            "--strict"
+    # Use default mypy options if no config file exists
+    if (-not (Test-Path "mypy.ini")) {
+        $MypyArgs += @(
+            "--no-implicit-optional",
+            "--strict",
             "--warn-incomplete-stub",
+            "--warn-no-return",
             "--warn-redundant-casts",
             "--warn-return-any",
             "--warn-unreachable",
             "--warn-unused-ignores"
         )
-        FilePath = $ExePath
-        NoNewWindow = $true
-        Wait = $true
     }
-
-    # Perform static type checking with mypy
-    Start-Process @MypyArgs
+    Start-Process $ExePath -ArgumentList $MypyArgs -NoNewWindow -Wait
 }

@@ -1,8 +1,6 @@
-#
-#  spec_metadata.py
-#  ----------------
-#  RFC specification metadata module.
-#
+"""
+RFC specification metadata module.
+"""
 import json
 
 
@@ -12,7 +10,7 @@ class SpecMetadata:
     """
     def __init__(self,
                  rfc_id: int = 0,
-                 files: dict[str, str] = None,
+                 files: dict[str, str] | None = None,
                  title: str = str(),
                  authors: str = str(),
                  date: str = str(),

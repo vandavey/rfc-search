@@ -1,8 +1,6 @@
-#
-#  parser.py
-#  ---------
-#  Command-line argument parser module.
-#
+"""
+Command-line argument parser module.
+"""
 from argparse import ArgumentParser
 
 
@@ -10,11 +8,11 @@ class Parser:
     """
     Command-line argument parser.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the object.
         """
-        raise NotImplementedError(self.__init__)
+        raise NotImplementedError(Parser.__init__)
 
     def help(self) -> str:
         """

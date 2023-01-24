@@ -1,14 +1,13 @@
-#
-#  utils.py
-#  --------
-#  Module for miscellaneous utility functions and types.
-#
+"""
+Module for miscellaneous utility functions and types.
+"""
 import enum
 import re
+from enum import IntEnum, StrEnum
 
 
 @enum.unique
-class RfcFieldName(enum.StrEnum):
+class RfcFieldName(StrEnum):
     """
     RFC metadata field name enumeration type.
     """
@@ -22,7 +21,7 @@ class RfcFieldName(enum.StrEnum):
 
 
 @enum.unique
-class RfcFieldPos(enum.IntEnum):
+class RfcFieldPos(IntEnum):
     """
     RFC metadata field position enumeration type.
     """
