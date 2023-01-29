@@ -9,7 +9,7 @@ from enum import IntEnum, StrEnum
 @enum.unique
 class RfcFieldName(StrEnum):
     """
-    RFC metadata field name enumeration type.
+    RFC metadata field name string enumeration type.
     """
     ID = "Number"
     FILES = "Files"
@@ -23,7 +23,7 @@ class RfcFieldName(StrEnum):
 @enum.unique
 class RfcFieldPos(IntEnum):
     """
-    RFC metadata field position enumeration type.
+    RFC metadata field position integral enumeration type.
     """
     ID = 0
     FILES = 1
@@ -32,6 +32,27 @@ class RfcFieldPos(IntEnum):
     DATE = 4
     MORE_INFO = 5
     STATUS = 6
+
+
+def repo_url() -> str:
+    """
+    Get the application source code repository URL.
+    """
+    return "https://github.com/vandavey/rfc-search"
+
+
+def app_name() -> str:
+    """
+    Get the rfc-search application name.
+    """
+    return "rfc-search.py"
+
+
+def app_title() -> str:
+    """
+    Get the rfc-search application title.
+    """
+    return f"{app_name()} ({repo_url()})"
 
 
 def valid_url(url: str) -> bool:
@@ -48,3 +69,7 @@ def valid_url(url: str) -> bool:
     full_pattern = rf"(http|https)?://({'|'.join(patterns_parts)})+"
 
     return bool(re.match(full_pattern, url.strip()))
+
+
+# Module export symbols
+__all__ = ["RfcFieldName", "RfcFieldPos"]

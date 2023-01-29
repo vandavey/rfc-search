@@ -1,21 +1,46 @@
 """
-Module for console utilities and system interoperability.
+Module for console utilities and control sequence processing.
 """
+import enum
 import os
-from typing import Any, Callable, TypeAlias
+import utils
+from enum import StrEnum
+from alias import func_t, void_t
 
-_Callable: TypeAlias = Callable[..., Any]  # Callable type alias
+_ESC = "\033"
+
+
+@enum.unique
+class Color(StrEnum):
+    """
+    Console color string enumeration type.
+    """
+    CYAN = f"{_ESC}[38;2;0;255;255m"
+    RED = f"{_ESC}[38;2;246;0;0m"
+    GREEN = f"{_ESC}[38;2;166;226;46m"
+    YELLOW = f"{_ESC}[38;2;250;230;39m"
+
+
+@enum.unique
+class LevelSymbol(StrEnum):
+    """
+    Console status level symbol enumeration type.
+    """
+    INFO = "[*]"
+    ERROR = "[x]"
+    VERBOSE = "[+]"
+    WARN = "[!]"
 
 
 class ExternError(RuntimeError):
     """
     External function runtime exception.
     """
-    def __init__(self, extern: _Callable, ecode: int):
+    def __init__(self, extern: func_t, ecode: int) -> None:
         """
         Initialize the object.
         """
-        self.Extern: _Callable = extern
+        self.Extern: func_t = extern
         self.ErrorCode: int = ecode
 
     def __repr__(self) -> str:
@@ -38,7 +63,7 @@ def _is_win_os() -> bool:
     return os.name == "nt"
 
 
-# Windows-specific imports, constants and fields
+# Windows-specific imports, constants and globals
 if _is_win_os():
     import ctypes
     from ctypes import c_long, c_ulong, c_void_p, WinDLL
@@ -58,7 +83,7 @@ if _is_win_os():
 _vt_seq_enabled: bool = not _is_win_os()  # VT sequences processing enabled
 
 
-def _assert_win_os(caller: _Callable) -> None:
+def _assert_win_os(caller: func_t) -> void_t:
     """
     Raise a runtime error if the local system is not Windows.
     """
@@ -66,7 +91,7 @@ def _assert_win_os(caller: _Callable) -> None:
         raise RuntimeError(f"<{caller.__name__}> is only supported on Windows")
 
 
-def _assert_externs_setup() -> None:
+def _assert_externs_setup() -> void_t:
     """
     Raise a runtime error if the Windows Console API
     external function are not configured.
@@ -77,7 +102,7 @@ def _assert_externs_setup() -> None:
         raise RuntimeError(f"Externs must be setup by calling <{_setup_externs}>")
 
 
-def _assert_valid_handle(handle: int, caller: _Callable) -> None:
+def _assert_valid_handle(handle: int, caller: func_t) -> void_t:
     """
     Raise a runtime or value error if the given handle is invalid.
     """
@@ -89,7 +114,7 @@ def _assert_valid_handle(handle: int, caller: _Callable) -> None:
 
 def _setup_externs() -> bool:
     """
-    Configure the all external functions in the Windows Console API.
+    Configure all external Windows Console API functions.
     """
     _assert_win_os(_setup_externs)
 
@@ -165,7 +190,7 @@ def _get_console_mode(std_handle: int) -> int:
     return c_mode.value
 
 
-def _set_console_mode(std_handle: int, mode: int) -> None:
+def _set_console_mode(std_handle: int, mode: int) -> void_t:
     """
     Set the input or output mode of the console buffer corresponding to the given
     console input or output buffer handle using the Windows Console API.
@@ -180,16 +205,6 @@ def _set_console_mode(std_handle: int, mode: int) -> None:
 
     if not _kernel32.SetConsoleMode(c_void_p(std_handle), c_ulong(mode)):
         raise ExternError(_kernel32.SetConsoleMode, _get_last_error())
-
-
-def _console_title(title: str) -> None:
-    """
-    Set the title of the current console window.
-    """
-    if not _vt_seq_enabled:
-        raise RuntimeError("Virtual terminal processing is disabled")
-
-    print(f"\x1b]0;{title}\x07", end="")
 
 
 def _enable_vt_seq() -> bool:
@@ -216,11 +231,25 @@ def _enable_vt_seq() -> bool:
     return _vt_seq_enabled
 
 
-def setup_console() -> None:
+def _console_title(title: str) -> void_t:
+    """
+    Set the title of the current console window.
+    """
+    if not _vt_seq_enabled:
+        raise RuntimeError(f"Call <{_enable_vt_seq}> to enable VT control sequences")
+
+    print(f"{_ESC}]0;{title}\x07", end="")
+
+
+def setup_console() -> void_t:
     """
     Customize the console title and enable virtual terminal processing.
     """
     if _is_win_os() and not _enable_vt_seq():
         raise RuntimeError("Error occurred enabling virtual terminal processing")
 
-    _console_title("rfc-search (https://github.com/vandavey/rfc-search)")
+    _console_title(utils.app_title())
+
+
+# Module export symbols
+__all__ = ["Color", "LevelSymbol", "ExternError"]

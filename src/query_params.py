@@ -2,7 +2,8 @@
 HTTP RFC specification lookup query parameters module.
 """
 from datetime import datetime
-from .utils import RfcFieldName
+from alias import void_t
+from utils import RfcFieldName
 
 
 class QueryParams:
@@ -36,7 +37,7 @@ class QueryParams:
 
         self.validate()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Get the string representation of the object.
         """
@@ -60,7 +61,7 @@ class QueryParams:
             "to_month": "December"
         }
 
-    def validate(self) -> None:
+    def validate(self) -> void_t:
         """
         Validate the underlying query parameters.
         """
@@ -74,3 +75,7 @@ class QueryParams:
 
         if self.SortDir not in ["ASC", "DESC"]:
             raise RuntimeError("Sort direction must be 'ASC' or 'DESC'")
+
+
+# Module export symbols
+__all__ = ["QueryParams"]

@@ -5,7 +5,7 @@ Application entry point script.
 import console  # type: ignore
 
 
-def main() -> None:
+def main() -> void_t:
     """
     Application startup function.
     """

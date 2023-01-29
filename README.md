@@ -1,3 +1,7 @@
+<div align="center">
+    <img src="assets/Icon.ico" width=175px alt="logo">
+</div>
+
 # rfc-search
 
 <div>

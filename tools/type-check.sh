@@ -14,7 +14,7 @@ error() {
 }
 
 if [[ $PWD != *"rfc-search/tools"* ]]; then
-    error "Script must be executed in directory 'rfc-search/tools'"
+    error "Script must be executed in directory '/rfc-search/tools'"
 fi
 
 ARGS=""

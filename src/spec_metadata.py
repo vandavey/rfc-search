@@ -42,3 +42,7 @@ class SpecMetadata:
         Get the specification metadata as a JSON string.
         """
         return json.dumps(self.__dict__, indent=abs(indent))
+
+
+# Module export symbols
+__all__ = ["SpecMetadata"]
