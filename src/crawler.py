@@ -31,6 +31,20 @@ class Crawler:
 
         return response
 
+    def crawl(self, url: str) -> SpecMetadata | list[SpecMetadata] | void_t:
+        """
+        Use the RFC web search functionality to find the specification(s)
+        matching the criteria in the underlying query parameters.
+        """
+        if not utils.valid_url(url):
+            raise ValueError(f"Invalid URL: {url}")
+
+        self.Params.validate()
+        url = "https://www.rfc-editor.org/search/rfc_search_detail.php"
+
+        # ID search takes precedence over keyword search
+        return self.id_search(url) if self.Params.Id else self.keyword_search(url)
+
     def id_search(self, url: str) -> SpecMetadata | void_t:
         """
         Use the RFC web search functionality to find the specification matching
@@ -50,20 +64,6 @@ class Crawler:
             raise RuntimeError("Missing RFC title or keyword for which to search")
 
         raise NotImplementedError(self.keyword_search)
-
-    def crawl(self, url: str) -> SpecMetadata | list[SpecMetadata] | void_t:
-        """
-        Use the RFC web search functionality to find the specification(s)
-        matching the criteria in the underlying query parameters.
-        """
-        if not utils.valid_url(url):
-            raise ValueError(f"Invalid URL: {url}")
-
-        self.Params.validate()
-        url = "https://www.rfc-editor.org/search/rfc_search_detail.php"
-
-        # ID search takes precedence over keyword search
-        return self.id_search(url) if self.Params.Id else self.keyword_search(url)
 
 
 # Module export symbols

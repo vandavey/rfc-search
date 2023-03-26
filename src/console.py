@@ -258,8 +258,8 @@ def write_ln(obj: any_t,
              symbol: LevelSymbol = LevelSymbol.INFO,
              stream: TextIO = sys.stdout) -> void_t:
     """
-    Write a line prefixed with a colored status level symbol
-    to the standard output console stream.
+    Write a line prefixed with a colored status level
+    symbol to the specified output console stream.
     """
     print(f"{color}{symbol}{_RESET} {obj}{_RESET}", file=stream)
 
