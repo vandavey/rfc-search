@@ -10,20 +10,23 @@ using namespace System.Runtime.InteropServices
 [CmdletBinding()]
 param (
     [Parameter(
-        Mandatory,
         Position=0,
         ValueFromPipeline,
         ValueFromPipelineByPropertyName,
         ValueFromRemainingArguments
     )]
     [Alias("p")]
-    [string[]] $Path
+    [string[]] $Path = $null
 )
 
 # Define global variables and validate prerequisites
 begin {
     if (-not [RuntimeInformation]::IsOSPlatform([OSPlatform]::Windows)) {
         throw "This script only supports Windows operating Systems"
+    }
+
+    if ((Get-Location).Path.Replace("\", "/") -notlike "*/rfc-search/tools*") {
+        throw "This script must be executed in directory /rfc-search/tools"
     }
 
     $MypyArgs = @()
@@ -41,7 +44,7 @@ begin {
 # Process the pipeline input if available
 process {
     if ($Path) {
-        if (-not (Test-Path $Path)) {
+        if ($Path -notlike "***" -and -not (Test-Path $Path)) {
             throw "Invalid file path: '${Path}'"
         }
         $MypyArgs += $Path
@@ -52,6 +55,10 @@ process {
 end {
     # Use default mypy options if no config file exists
     if (-not (Test-Path "mypy.ini")) {
+        if (-not $MypyArgs) {
+            throw "Path must be specified if no configuration file exists"
+        }
+
         $MypyArgs += @(
             "--no-implicit-optional",
             "--strict",

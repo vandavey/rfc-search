@@ -3,15 +3,17 @@ Module for console utilities and control sequence processing.
 """
 import enum
 import os
+import sys
 import utils
-from enum import StrEnum
-from alias import func_t, void_t
+from typing import TextIO
+from alias import any_t, func_t, void_t
 
 _ESC = "\033"
+_RESET = f"{_ESC}[0m"
 
 
 @enum.unique
-class Color(StrEnum):
+class Color(enum.StrEnum):
     """
     Console color string enumeration type.
     """
@@ -22,7 +24,7 @@ class Color(StrEnum):
 
 
 @enum.unique
-class LevelSymbol(StrEnum):
+class LevelSymbol(enum.StrEnum):
     """
     Console status level symbol enumeration type.
     """
@@ -249,6 +251,31 @@ def setup_console() -> void_t:
         raise RuntimeError("Error occurred enabling virtual terminal processing")
 
     _console_title(utils.app_title())
+
+
+def write_ln(obj: any_t,
+             color: Color = Color.CYAN,
+             symbol: LevelSymbol = LevelSymbol.INFO,
+             stream: TextIO = sys.stdout) -> void_t:
+    """
+    Write a line prefixed with a colored status level symbol
+    to the standard output console stream.
+    """
+    print(f"{color}{symbol}{_RESET} {obj}{_RESET}", file=stream)
+
+
+def error_ln(obj: any_t) -> void_t:
+    """
+    Write an error line to the standard error console stream.
+    """
+    write_ln(obj, color=Color.RED, symbol=LevelSymbol.ERROR, stream=sys.stderr)
+
+
+def warn_ln(obj: any_t) -> void_t:
+    """
+    Write a warning line to the standard error console stream.
+    """
+    write_ln(obj, color=Color.YELLOW, symbol=LevelSymbol.WARN, stream=sys.stderr)
 
 
 # Module export symbols

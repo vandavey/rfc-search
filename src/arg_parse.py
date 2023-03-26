@@ -1,35 +1,40 @@
 """
 Command-line argument parser module.
 """
+import argparse
 import enum
-
+import console
 import utils
-from argparse import ArgumentParser
-from enum import IntEnum
 from alias import any_t, args_t, void_t
 
 
+# Parsing error occurred
+_error_occurred: bool = False
+
+
 @enum.unique
-class ArgError(IntEnum):
+class ArgError(enum.StrEnum):
     """
     Command-line argument error type.
     """
-    NO_ERROR = 0          # No errors occurred
-    UNRECOGNIZED = 1      # Unrecognized argument(s)
-    MISSING_REQUIRED = 2  # Required argument missing
-    INVALID_COMBO = 3     # Invalid argument combination
-    INVALID_VALUE = 4     # Invalid argument value
+    NO_ERROR = "No argument parsing errors occurred"
+    UNRECOGNIZED = "Unrecognized argument(s): {}"
+    MISSING_REQUIRED = "One of the following arguments is required: {}, {}"
+    INVALID_COMBO = "Invalid argument combination: {}"
+    INVALID_VALUE = "Invalid value for argument '{}': {}"
 
 
-@enum.unique
-class ParseResult(IntEnum):
+class ArgumentParser(argparse.ArgumentParser):
     """
-    Command-line argument parser parsing results status.
+    Customized standard library command-line argument parser.
     """
-    INCOMPLETE = 0  # Parsing incomplete
-    VALID = 1       # Arguments are valid
-    INVALID = 2     # Arguments are invalid
-    HELP = 3        # Help flag was parsed
+    def error(self, message: str) -> void_t:
+        """
+        Override the default argument error handling so that it can
+        be handled by the user-defined argument parser.
+        """
+        global _error_occurred
+        _error_occurred = True
 
 
 class Parser:
@@ -44,16 +49,9 @@ class Parser:
         self.UnknownArgs: list[str] = list[str]()
 
         self._Parser: ArgumentParser = ArgumentParser(add_help=False)
-        self._Status: ParseResult = ParseResult.INCOMPLETE
+        self._Valid: bool = False
 
         self._setup_args()
-
-    @staticmethod
-    def _app_usage() -> str:
-        """
-        Get the application app_usage information.
-        """
-        return f"Usage: {utils.app_name()} [OPTIONS] RFC_ID"
 
     @staticmethod
     def help_msg() -> str:
@@ -74,57 +72,94 @@ class Parser:
             f"Usage Examples:",
             f"  rfc-search.py 9293",
             f"  rfc-search.py -l -k TCP",
-            f"  rfc-search.py --keyword TCP"
+            f"  rfc-search.py --keyword TCP\n"
         ]
         return "\n".join(help_lines)
 
-    def _add_pos_arg_spec(self, name: str, arg_t: type, **kwargs: any_t) -> void_t:
+    @staticmethod
+    def _app_usage() -> str:
         """
-        Attach a positional argument specification to the underlying argument parser.
+        Get the application usage information.
         """
-        if not name or name.startswith("-"):
-            raise ValueError(f"Invalid positional argument name: '{name}'")
+        return f"Usage: {utils.app_name()} [-?hlv] [-k KEYWORD] [RFC_ID]"
 
-        self._Parser.add_argument(name, type=arg_t, **kwargs)
-
-    def _add_opt_arg_spec(self,
-                          name: str,
-                          arg_t: type,
-                          aliases: list[str],
-                          **kwargs: any_t) -> void_t:
+    @staticmethod
+    def _fmt_error_msg(error: ArgError, *args: any_t) -> str:
         """
-        Attach an optional argument specification to the underlying argument parser.
+        Format an argument error message using the specified arguments.
         """
-        if not name or name.startswith("-"):
-            raise ValueError(f"Invalid argument name: '{name}'")
+        return error.value.format(*args)
 
-        for alias in aliases:
-            if len(alias) == 0:
-                raise ValueError(f"At least one argument name alias is required")
+    @staticmethod
+    def _print_error(error: ArgError, *args: any_t) -> void_t:
+        """
+        Write the application usage to the standard output stream and
+        write an error message to the standard error stream.
+        """
+        print(Parser._app_usage())
+        console.error_ln(f"{error.value.format(*args)}\n")
 
-            if len(alias) != 1 or alias == "-":
-                raise ValueError("Argument alias must be a single letter")
+    def parse_args(self) -> args_t:
+        """
+        Parse the application command-line arguments.
+        """
+        self.Args, self.UnknownArgs = self._Parser.parse_known_args()
+        self.validate()
 
-        names = [*[f"-{a}" for a in aliases], f"--{name}"]
-        self._Parser.add_argument(*names, type=arg_t, **kwargs)
+        return self.Args
+
+    def is_valid(self) -> bool:
+        """
+        Determine whether the parsed underlying command-line arguments are valid.
+        """
+        return self._Valid
+
+    def validate(self) -> void_t:
+        """
+        Determine whether the parsed underlying command-line arguments are valid.
+        """
+        if not _error_occurred and (self.Args.help or not self._args_provided()):
+            print(Parser.help_msg())
+            self._Valid = True
+
+        else:
+            if self.UnknownArgs:
+                Parser._print_error(ArgError.UNRECOGNIZED,
+                                    ", ".join(self.UnknownArgs))
+
+            elif not self.Args.rfc_id and not self.Args.keyword:
+                Parser._print_error(ArgError.MISSING_REQUIRED,
+                                    "-k/--keyword TERM",
+                                    "RFC_ID")
+
+            elif self.Args.rfc_id and self.Args.keyword:
+                Parser._print_error(ArgError.INVALID_COMBO,
+                                    "-k/--keyword TERM, RFC_ID")
+            self._Valid = False
+
+    def _args_provided(self) -> bool:
+        """
+        Determine whether any command-line arguments were provided.
+        """
+        args_list = [
+            self.Args.help,
+            self.Args.keyword,
+            self.Args.list,
+            self.Args.rfc_id,
+            self.Args.verbose
+        ]
+        return not all([not a for a in args_list])
 
     def _setup_args(self) -> void_t:
         """
         Configure the underlying argument parser argument specifications.
         """
-        self._add_pos_arg_spec("rfc_id", int, nargs="?")
-        self._add_opt_arg_spec("help", bool, ["h", "?"])
-        self._add_opt_arg_spec("verbose", bool, ["v"])
-        self._add_opt_arg_spec("keyword", str, ["k"])
-        self._add_opt_arg_spec("list", bool, ["l"])
-
-    def parse_args(self) -> tuple[args_t, ParseResult]:
-        """
-        Parse the application command-line arguments.
-        """
-        self.Args, self.UnknownArgs = self._Parser.parse_known_args()
-        return self.Args, self._Status
+        self._Parser.add_argument("rfc_id", type=int, nargs="?")
+        self._Parser.add_argument("-h", "-?", "--help", action="store_true")
+        self._Parser.add_argument("-v", "--verbose", action="store_true")
+        self._Parser.add_argument("-k", "--keyword", type=str)
+        self._Parser.add_argument("-l", "--list", action="store_true")
 
 
 # Module export symbols
-__all__ = ["ArgError", "Parser", "ParseResult"]
+__all__ = ["ArgError", "Parser"]

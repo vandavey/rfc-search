@@ -36,7 +36,7 @@ if [ -p /dev/stdin ]; then
 fi
 
 # The script requires one or more arguments
-if  [[ -z $ARGS ]]; then
+if  [[ -z $ARGS ]] && [ ! -f "mypy.ini" ]; then
     error "One or more argument musty be specified"
 fi
 

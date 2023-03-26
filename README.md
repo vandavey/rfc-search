@@ -25,6 +25,7 @@ RFC specification search application written in Python.
 
 ## Remarks
 
+* THIS APPLICATION IS NOT CURRENTLY IN A FUNCTIONAL STATE.
 * Please use discretion as this application is still in development.
 
 ***
