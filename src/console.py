@@ -5,11 +5,32 @@ import enum
 import os
 import sys
 import utils
-from typing import TextIO
-from alias import any_t, func_t, void_t
+from typing import Any, TextIO
+from alias import func_t
+
+# Windows-specific imports
+if os.name == "nt":
+    import ctypes
+    from ctypes import c_long, c_ulong, c_void_p, WinDLL
 
 _ESC = "\033"
 _RESET = f"{_ESC}[0m"
+
+# Windows-specific constants and globals
+if os.name == "nt":
+    _ENABLE_PROCESSED_OUTPUT: int = 0x0001             # Enable ASCII sequences
+    _ENABLE_VIRTUAL_TERMINAL_INPUT: int = 0x0200       # Enable input VT sequences
+    _ENABLE_VIRTUAL_TERMINAL_PROCESSING: int = 0x0004  # Enable output VT sequences
+
+    _INVALID_HANDLE_VALUE: int = -1  # Invalid handle value
+    _STDIN_HANDLE_ID: int = -10      # Standard input buffer handle ID
+    _STDOUT_HANDLE_ID: int = -11     # Standard output buffer handle ID
+
+    _externs_setup: bool = False  # External function setup completed
+
+    _kernel32: WinDLL = ctypes.windll.kernel32  # Windows 'kernel32' DLL
+
+_vt_seq_enabled: bool = os.name != "nt"  # VT sequences processing enabled
 
 
 @enum.unique
@@ -65,27 +86,7 @@ def _is_win_os() -> bool:
     return os.name == "nt"
 
 
-# Windows-specific imports, constants and globals
-if _is_win_os():
-    import ctypes
-    from ctypes import c_long, c_ulong, c_void_p, WinDLL
-
-    _ENABLE_PROCESSED_OUTPUT: int = 0x0001             # Enable ASCII sequences
-    _ENABLE_VIRTUAL_TERMINAL_INPUT: int = 0x0200       # Enable input VT sequences
-    _ENABLE_VIRTUAL_TERMINAL_PROCESSING: int = 0x0004  # Enable output VT sequences
-
-    _INVALID_HANDLE_VALUE: int = -1  # Invalid handle value
-    _STDIN_HANDLE_ID: int = -10      # Standard input buffer handle ID
-    _STDOUT_HANDLE_ID: int = -11     # Standard output buffer handle ID
-
-    _externs_setup: bool = False  # External function setup completed
-
-    _kernel32: WinDLL = ctypes.windll.kernel32  # Windows 'kernel32' DLL
-
-_vt_seq_enabled: bool = not _is_win_os()  # VT sequences processing enabled
-
-
-def _assert_win_os(caller: func_t) -> void_t:
+def _assert_win_os(caller: func_t) -> None:
     """
     Raise a runtime error if the local system is not Windows.
     """
@@ -93,7 +94,7 @@ def _assert_win_os(caller: func_t) -> void_t:
         raise RuntimeError(f"<{caller.__name__}> is only supported on Windows")
 
 
-def _assert_externs_setup() -> void_t:
+def _assert_externs_setup() -> None:
     """
     Raise a runtime error if the Windows Console API
     external function are not configured.
@@ -104,7 +105,7 @@ def _assert_externs_setup() -> void_t:
         raise RuntimeError(f"Externs must be setup by calling <{_setup_externs}>")
 
 
-def _assert_valid_handle(handle: int, caller: func_t) -> void_t:
+def _assert_valid_handle(handle: int, caller: func_t) -> None:
     """
     Raise a runtime or value error if the given handle is invalid.
     """
@@ -192,7 +193,7 @@ def _get_console_mode(std_handle: int) -> int:
     return c_mode.value
 
 
-def _set_console_mode(std_handle: int, mode: int) -> void_t:
+def _set_console_mode(std_handle: int, mode: int) -> None:
     """
     Set the input or output mode of the console buffer corresponding to the given
     console input or output buffer handle using the Windows Console API.
@@ -233,7 +234,7 @@ def _enable_vt_seq() -> bool:
     return _vt_seq_enabled
 
 
-def _console_title(title: str) -> void_t:
+def _console_title(title: str) -> None:
     """
     Set the title of the current console window.
     """
@@ -243,7 +244,7 @@ def _console_title(title: str) -> void_t:
     print(f"{_ESC}]0;{title}\x07", end="")
 
 
-def setup_console() -> void_t:
+def setup_console() -> None:
     """
     Customize the console title and enable virtual terminal processing.
     """
@@ -253,10 +254,10 @@ def setup_console() -> void_t:
     _console_title(utils.app_title())
 
 
-def write_ln(obj: any_t,
+def write_ln(obj: Any,
              color: Color = Color.CYAN,
              symbol: LevelSymbol = LevelSymbol.INFO,
-             stream: TextIO = sys.stdout) -> void_t:
+             stream: TextIO = sys.stdout) -> None:
     """
     Write a line prefixed with a colored status level
     symbol to the specified output console stream.
@@ -264,14 +265,14 @@ def write_ln(obj: any_t,
     print(f"{color}{symbol}{_RESET} {obj}{_RESET}", file=stream)
 
 
-def error_ln(obj: any_t) -> void_t:
+def error_ln(obj: Any) -> None:
     """
     Write an error line to the standard error console stream.
     """
     write_ln(obj, color=Color.RED, symbol=LevelSymbol.ERROR, stream=sys.stderr)
 
 
-def warn_ln(obj: any_t) -> void_t:
+def warn_ln(obj: Any) -> None:
     """
     Write a warning line to the standard error console stream.
     """

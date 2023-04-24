@@ -3,10 +3,11 @@ Command-line argument parser module.
 """
 import argparse
 import enum
+import typing
 import console
 import utils
-from alias import any_t, args_t, void_t
-
+from typing import Any
+from alias import args_t
 
 # Parsing error occurred
 _error_occurred: bool = False
@@ -28,7 +29,8 @@ class ArgumentParser(argparse.ArgumentParser):
     """
     Customized standard library command-line argument parser.
     """
-    def error(self, message: str) -> void_t:
+    @typing.no_type_check
+    def error(self, message: str) -> None:
         """
         Override the default argument error handling so that it can
         be handled by the user-defined argument parser.
@@ -84,14 +86,14 @@ class Parser:
         return f"Usage: {utils.app_name()} [-?hlv] [-k KEYWORD] [RFC_ID]"
 
     @staticmethod
-    def _fmt_error_msg(error: ArgError, *args: any_t) -> str:
+    def _fmt_error_msg(error: ArgError, *args: Any) -> str:
         """
         Format an argument error message using the specified arguments.
         """
         return error.value.format(*args)
 
     @staticmethod
-    def _print_error(error: ArgError, *args: any_t) -> void_t:
+    def _print_error(error: ArgError, *args: Any) -> None:
         """
         Write the application usage to the standard output stream and
         write an error message to the standard error stream.
@@ -114,28 +116,34 @@ class Parser:
         """
         return self._Valid
 
-    def validate(self) -> void_t:
+    def validate(self) -> None:
         """
         Determine whether the parsed underlying command-line arguments are valid.
         """
-        if not _error_occurred and (self.Args.help or not self._args_provided()):
+        self._Valid = False
+
+        if not self.Args.help and not self._args_provided():
+            self.Args.help = True
+
+        if not _error_occurred and self.Args.help:
             print(Parser.help_msg())
             self._Valid = True
 
+        elif self.UnknownArgs:
+            Parser._print_error(ArgError.UNRECOGNIZED,
+                                ", ".join(self.UnknownArgs))
+
+        elif not self.Args.rfc_id and not self.Args.keyword:
+            Parser._print_error(ArgError.MISSING_REQUIRED,
+                                "-k/--keyword TERM",
+                                "RFC_ID")
+
+        elif self.Args.rfc_id and self.Args.keyword:
+            Parser._print_error(ArgError.INVALID_COMBO,
+                                "-k/--keyword TERM, RFC_ID")
+
         else:
-            if self.UnknownArgs:
-                Parser._print_error(ArgError.UNRECOGNIZED,
-                                    ", ".join(self.UnknownArgs))
-
-            elif not self.Args.rfc_id and not self.Args.keyword:
-                Parser._print_error(ArgError.MISSING_REQUIRED,
-                                    "-k/--keyword TERM",
-                                    "RFC_ID")
-
-            elif self.Args.rfc_id and self.Args.keyword:
-                Parser._print_error(ArgError.INVALID_COMBO,
-                                    "-k/--keyword TERM, RFC_ID")
-            self._Valid = False
+            self._Valid = True
 
     def _args_provided(self) -> bool:
         """
@@ -150,11 +158,11 @@ class Parser:
         ]
         return not all([not a for a in args_list])
 
-    def _setup_args(self) -> void_t:
+    def _setup_args(self) -> None:
         """
         Configure the underlying argument parser argument specifications.
         """
-        self._Parser.add_argument("rfc_id", type=int, nargs="?")
+        self._Parser.add_argument("rfc_id", default=0, type=int, nargs="?")
         self._Parser.add_argument("-h", "-?", "--help", action="store_true")
         self._Parser.add_argument("-v", "--verbose", action="store_true")
         self._Parser.add_argument("-k", "--keyword", type=str)
