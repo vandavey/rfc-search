@@ -3,6 +3,7 @@ HTTP RFC specification lookup query parameters module.
 """
 import enum
 from datetime import datetime
+
 from utils import MetaFieldName
 
 
@@ -75,10 +76,6 @@ class QueryParams:
         if not self.Id and not self.Title:
             error_msg = f"RFC specification number or title must be specified"
             raise RuntimeError(error_msg)
-
-        if self.SortBy not in [n for n in MetaFieldName]:
-            fields = ", ".join([f"'{n}'" for n in MetaFieldName])
-            raise RuntimeError(f"Invalid sort field, valid fields include {fields}")
 
 
 # Module export symbols

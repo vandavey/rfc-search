@@ -4,9 +4,10 @@ Command-line argument parser module.
 import argparse
 import enum
 import typing
+from typing import Any
+
 import console
 import utils
-from typing import Any
 from alias import args_t
 
 # Parsing error occurred

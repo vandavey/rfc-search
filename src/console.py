@@ -4,14 +4,14 @@ Module for console utilities and control sequence processing.
 import enum
 import os
 import sys
-import utils
 from typing import Any, TextIO
-from alias import func_t
 
-# Windows-specific imports
 if os.name == "nt":
     import ctypes
     from ctypes import c_long, c_ulong, c_void_p, WinDLL
+
+import utils
+from alias import func_t
 
 _ESC = "\033"
 _RESET = f"{_ESC}[0m"

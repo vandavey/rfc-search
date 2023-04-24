@@ -1,12 +1,15 @@
 """
 RFC specification web scraper module.
 """
+from typing import Any
+
+from bs4 import BeautifulSoup
+
 import requests
+from requests import Response
+
 import console
 import utils
-from typing import Any
-from bs4 import BeautifulSoup
-from requests import Response
 from query_params import QueryParams
 from metadata import Metadata
 from utils import MetaField
@@ -111,16 +114,16 @@ class WebScraper:
         ]
         return table
 
-    def _spec_content(self, content_url: str) -> str:
+    def _spec_content(self, url: str) -> str:
         """
         Extract the content of an RFC specification by making a web
         request to the given URL.
         """
-        if not utils.valid_url(content_url):
-            raise ValueError(f"Invalid URL specified: '{content_url}'")
+        if not utils.valid_url(url):
+            raise ValueError(f"Invalid URL specified: '{url}'")
 
         spec_content = ""
-        resp = self._send_request(content_url)
+        resp = self._send_request(url)
 
         self.Valid = resp.ok
 
