@@ -4,20 +4,19 @@ RFC specification metadata module.
 import json
 
 
-class SpecMetadata:
+class Metadata:
     """
     RFC specification metadata.
     """
     def __init__(self,
                  rfc_id: int = 0,
                  files: dict[str, str] | None = None,
-                 title: str = str(),
-                 authors: str = str(),
-                 date: str = str(),
-                 more_info: str = str(),
-                 status: str = str(),
-                 txt_url: str = str(),
-                 info_url: str = str()):
+                 title: str = "",
+                 authors: str = "",
+                 date: str = "",
+                 more_info: str = "",
+                 status: str = "",
+                 page_url: str = ""):
         """
         Initialize the object.
         """
@@ -28,8 +27,7 @@ class SpecMetadata:
         self.Date: str = date
         self.MoreInfo: str = more_info
         self.Status: str = status
-        self.InfoUrl: str = info_url
-        self.TxtUrl: str = txt_url
+        self.PageUrl: str = page_url
 
     def __repr__(self) -> str:
         """
@@ -45,4 +43,4 @@ class SpecMetadata:
 
 
 # Module export symbols
-__all__ = ["SpecMetadata"]
+__all__ = ["Metadata"]

@@ -1,9 +1,19 @@
 """
 HTTP RFC specification lookup query parameters module.
 """
+import enum
 from datetime import datetime
-from alias import void_t
-from utils import RfcFieldName
+
+from utils import MetaFieldName
+
+
+@enum.unique
+class Sorting(enum.StrEnum):
+    """
+    RFC specification search results sorting direction.
+    """
+    ASCENDING = "ASC"
+    DESCENDING = "DESC"
 
 
 class QueryParams:
@@ -11,23 +21,21 @@ class QueryParams:
     HTTP RFC specification lookup query parameters.
     """
     def __init__(self,
-                 from_yr: int,
-                 to_yr: int,
-                 rfc_id: int = 0,
-                 title: str = "",
-                 page: int = 0,
-                 sort_by: RfcFieldName = RfcFieldName.ID,
-                 sort_dir: str = "ASC") -> None:
+                 rfc_id: int,
+                 title: str,
+                 from_year: int = 1968,
+                 to_year: int = datetime.now().year,
+                 sort_by: MetaFieldName = MetaFieldName.ID,
+                 sorting: Sorting = Sorting.ASCENDING) -> None:
         """
         Initialize the object.
         """
-        self.Id: int = rfc_id          # Specification ID
-        self.Title: str = title        # Specification title
-        self.FromYear: int = from_yr   # Specification published after year
-        self.ToYear: int = to_yr       # Specification published to year
-        self.Page: int = page          # Number of result pages to include
-        self.Sort: str = str(sort_by)  # Field by which to sort results
-        self.SortDir: str = sort_dir   # Results sorting direction ('ASC', 'DESC')
+        self.Id: int = rfc_id
+        self.Title: str = title
+        self.FromYear: int = from_year
+        self.ToYear: int = to_year
+        self.SortBy: MetaFieldName = sort_by
+        self.Sorting: Sorting = sorting
 
         if self.FromYear < 1968:
             self.FromYear = 1968
@@ -48,33 +56,26 @@ class QueryParams:
         Get a dictionary of the object to use in RFC lookups.
         """
         return {
-            "rfc": str(self.Id) if self.Id else str(),
-            "title": self.Title,
-            "from_year": str(self.FromYear),
-            "to_year": str(self.ToYear),
-            "page": str(abs(self.Page)) if self.Page else "All",
-            "sortkey": self.Sort,
-            "sorting": self.SortDir,
-            "pubstatus[]": "Any",
-            "pub_date_type": "range",
             "from_month": "January",
-            "to_month": "December"
+            "from_year": str(self.FromYear),
+            "page": "All",
+            "pub_date_type": "range",
+            "pubstatus[]": "Any",
+            "rfc": str(self.Id) if self.Id else "",
+            "sorting": str(self.Sorting),
+            "sortkey": str(self.SortBy),
+            "title": self.Title,
+            "to_month": "December",
+            "to_year": str(self.ToYear)
         }
 
-    def validate(self) -> void_t:
+    def validate(self) -> None:
         """
         Validate the underlying query parameters.
         """
         if not self.Id and not self.Title:
             error_msg = f"RFC specification number or title must be specified"
             raise RuntimeError(error_msg)
-
-        if self.Sort not in [n for n in RfcFieldName]:
-            fields = ", ".join([f"'{n}'" for n in RfcFieldName])
-            raise RuntimeError(f"Invalid sort field, valid fields include {fields}")
-
-        if self.SortDir not in ["ASC", "DESC"]:
-            raise RuntimeError("Sort direction must be 'ASC' or 'DESC'")
 
 
 # Module export symbols

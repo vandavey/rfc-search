@@ -3,28 +3,37 @@
 Application entry point script.
 """
 import console
-from alias import args_t, void_t
+from alias import args_t
 from arg_parse import Parser
+from query_params import QueryParams
+from web_scraper import WebScraper
 
 
-def parse_args() -> tuple[args_t, list[str]]:
+def rfc_search(args: args_t) -> None:
     """
-    Parse and validate the command-line arguments.
+    Perform the RFC specification search and scrape the HTML results.
     """
-    parser = Parser()
-    args = parser.parse_args()
+    params = QueryParams(args.rfc_id, args.keyword if args.keyword else "")
+    scraper = WebScraper(params, list_results=(args.list if args.list else False))
 
-    return args, parser.UnknownArgs
+    scraper.search()
 
 
-def main() -> void_t:
+def main() -> None:
     """
     Application startup function.
     """
     console.setup_console()
-    cl_args, unknown_args = parse_args()
 
-    raise NotImplementedError(main)
+    parser = Parser()
+    args = parser.parse_args()
+
+    # Invalid arguments, so terminate the app
+    if not parser.is_valid() or parser.Args.help:
+        exit(1)
+
+    rfc_search(args)
+    print()
 
 
 # Static application entry point

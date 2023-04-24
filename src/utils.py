@@ -7,23 +7,9 @@ from enum import IntEnum, StrEnum
 
 
 @enum.unique
-class RfcFieldName(StrEnum):
+class MetaField(IntEnum):
     """
-    RFC metadata field name string enumeration type.
-    """
-    ID = "Number"
-    FILES = "Files"
-    TITLE = "Title"
-    AUTHORS = "Authors"
-    DATE = "Date"
-    MORE_INFO = "More Info"
-    STATUS = "Status"
-
-
-@enum.unique
-class RfcFieldPos(IntEnum):
-    """
-    RFC metadata field position integral enumeration type.
+    RFC specification metadata field integral enumeration type.
     """
     ID = 0
     FILES = 1
@@ -32,6 +18,20 @@ class RfcFieldPos(IntEnum):
     DATE = 4
     MORE_INFO = 5
     STATUS = 6
+
+
+@enum.unique
+class MetaFieldName(StrEnum):
+    """
+    RFC specification metadata field name string enumeration type.
+    """
+    ID = "Number"
+    FILES = "Files"
+    TITLE = "Title"
+    AUTHORS = "Authors"
+    DATE = "Date"
+    MORE_INFO = "More Info"
+    STATUS = "Status"
 
 
 def repo_url() -> str:
@@ -72,4 +72,4 @@ def valid_url(url: str) -> bool:
 
 
 # Module export symbols
-__all__ = ["RfcFieldName", "RfcFieldPos"]
+__all__ = ["MetaFieldName", "MetaField"]
