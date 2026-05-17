@@ -2,20 +2,18 @@
 Command-line argument parser module.
 """
 import argparse
-import enum
-import typing
-from typing import Any
-
 import console
-import utils
-from alias import args_t
+from alias import any_t, args_t, void_t
+from constants import APP_NAME, APP_TITLE
+from enum import StrEnum, unique
+from typing import no_type_check
 
 # Parsing error occurred
 _error_occurred: bool = False
 
 
-@enum.unique
-class ArgError(enum.StrEnum):
+@unique
+class ArgError(StrEnum):
     """
     Command-line argument error type.
     """
@@ -30,8 +28,8 @@ class ArgumentParser(argparse.ArgumentParser):
     """
     Customized standard library command-line argument parser.
     """
-    @typing.no_type_check
-    def error(self, message: str) -> None:
+    @no_type_check
+    def error(self, message: str) -> void_t:
         """
         Override the default argument error handling so that it can
         be handled by the user-defined argument parser.
@@ -44,7 +42,7 @@ class Parser:
     """
     Command-line argument parser.
     """
-    def __init__(self) -> None:
+    def __init__(self) -> void_t:
         """
         Initialize the object.
         """
@@ -61,8 +59,8 @@ class Parser:
         """
         Get the application help information.
         """
-        help_lines = [
-            f"{utils.app_name()} ({utils.repo_url()})",
+        help_lines = (
+            APP_TITLE,
             f"{Parser._app_usage()}\n",
             f"RFC specification search application\n",
             f"Positional Arguments:",
@@ -73,34 +71,11 @@ class Parser:
             f"  -k,    --keyword TERM    Perform the RFC search using a keyword",
             f"  -l,    --list            Get a list of RFC specifications\n",
             f"Usage Examples:",
-            f"  rfc-search.py 9293",
-            f"  rfc-search.py -l -k TCP",
-            f"  rfc-search.py --keyword TCP\n"
-        ]
+            f"  {APP_NAME} 9293",
+            f"  {APP_NAME} -l -k TCP",
+            f"  {APP_NAME} --keyword TCP\n"
+        )
         return "\n".join(help_lines)
-
-    @staticmethod
-    def _app_usage() -> str:
-        """
-        Get the application usage information.
-        """
-        return f"Usage: {utils.app_name()} [-?hlv] [-k KEYWORD] [RFC_ID]"
-
-    @staticmethod
-    def _fmt_error_msg(error: ArgError, *args: Any) -> str:
-        """
-        Format an argument error message using the specified arguments.
-        """
-        return error.value.format(*args)
-
-    @staticmethod
-    def _print_error(error: ArgError, *args: Any) -> None:
-        """
-        Write the application usage to the standard output stream and
-        write an error message to the standard error stream.
-        """
-        print(Parser._app_usage())
-        console.error_ln(f"{error.value.format(*args)}\n")
 
     def parse_args(self) -> args_t:
         """
@@ -117,7 +92,7 @@ class Parser:
         """
         return self._Valid
 
-    def validate(self) -> None:
+    def validate(self) -> void_t:
         """
         Determine whether the parsed underlying command-line arguments are valid.
         """
@@ -131,8 +106,7 @@ class Parser:
             self._Valid = True
 
         elif self.UnknownArgs:
-            Parser._print_error(ArgError.UNRECOGNIZED,
-                                ", ".join(self.UnknownArgs))
+            Parser._print_error(ArgError.UNRECOGNIZED, ", ".join(self.UnknownArgs))
 
         elif not self.Args.rfc_id and not self.Args.keyword:
             Parser._print_error(ArgError.MISSING_REQUIRED,
@@ -140,11 +114,33 @@ class Parser:
                                 "RFC_ID")
 
         elif self.Args.rfc_id and self.Args.keyword:
-            Parser._print_error(ArgError.INVALID_COMBO,
-                                "-k/--keyword TERM, RFC_ID")
+            Parser._print_error(ArgError.INVALID_COMBO, "-k/--keyword TERM, RFC_ID")
 
         else:
             self._Valid = True
+
+    @staticmethod
+    def _app_usage() -> str:
+        """
+        Get the application usage information.
+        """
+        return f"Usage: {APP_NAME} [-?hlv] [-k KEYWORD] RFC_ID"
+
+    @staticmethod
+    def _fmt_error_msg(error: ArgError, *args: any_t) -> str:
+        """
+        Format an argument error message using the specified arguments.
+        """
+        return error.value.format(*args)
+
+    @staticmethod
+    def _print_error(error: ArgError, *args: any_t) -> void_t:
+        """
+        Write the application usage to the standard output stream and
+        write an error message to the standard error stream.
+        """
+        print(Parser._app_usage())
+        console.error_ln(f"{error.value.format(*args)}\n")
 
     def _args_provided(self) -> bool:
         """
@@ -159,7 +155,7 @@ class Parser:
         ]
         return not all([not a for a in args_list])
 
-    def _setup_args(self) -> None:
+    def _setup_args(self) -> void_t:
         """
         Configure the underlying argument parser argument specifications.
         """
@@ -168,7 +164,3 @@ class Parser:
         self._Parser.add_argument("-v", "--verbose", action="store_true")
         self._Parser.add_argument("-k", "--keyword", type=str)
         self._Parser.add_argument("-l", "--list", action="store_true")
-
-
-# Module export symbols
-__all__ = ["ArgError", "Parser"]
