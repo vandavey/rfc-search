@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Application entry point script.
+Application startup script.
 """
 import console
-from alias import args_t
+from alias import args_t, void_t
 from arg_parse import Parser
 from query_params import QueryParams
 from web_scraper import WebScraper
 
 
-def rfc_search(args: args_t) -> None:
+def rfc_search(args: args_t) -> void_t:
     """
     Perform the RFC specification search and scrape the HTML results.
     """
@@ -19,7 +19,7 @@ def rfc_search(args: args_t) -> None:
     scraper.search()
 
 
-def main() -> None:
+def main() -> void_t:
     """
     Application startup function.
     """

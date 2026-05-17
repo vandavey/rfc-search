@@ -2,21 +2,24 @@
 RFC specification metadata module.
 """
 import json
+from alias import void_t
 
 
 class Metadata:
     """
     RFC specification metadata.
     """
-    def __init__(self,
-                 rfc_id: int = 0,
-                 files: dict[str, str] | None = None,
-                 title: str = "",
-                 authors: str = "",
-                 date: str = "",
-                 more_info: str = "",
-                 status: str = "",
-                 page_url: str = ""):
+    def __init__(
+        self,
+        rfc_id: int = 0,
+        files: dict[str, str] | None = None,
+        title: str = "",
+        authors: str = "",
+        date: str = "",
+        more_info: str = "",
+        status: str = "",
+        page_url: str = ""
+    ) -> void_t:
         """
         Initialize the object.
         """
@@ -40,7 +43,3 @@ class Metadata:
         Get the specification metadata as a JSON string.
         """
         return json.dumps(self.__dict__, indent=abs(indent))
-
-
-# Module export symbols
-__all__ = ["Metadata"]

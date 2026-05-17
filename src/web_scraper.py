@@ -1,38 +1,34 @@
 """
 RFC specification web scraper module.
 """
-from typing import Any
-
-from bs4 import BeautifulSoup
-
-import requests
-from requests import Response
-
 import console
 import utils
-from query_params import QueryParams
+import requests
+from alias import any_t, void_t
+from bs4 import BeautifulSoup
+from constants import (
+    A_TAG,
+    DIV_TAG,
+    HREF_ATTR,
+    LI_TAG,
+    SEARCH_URI,
+    TABLE_TAG,
+    TD_TAG,
+    TH_TAG,
+    TR_TAG
+)
 from metadata import Metadata
-from utils import MetaField
+from query_params import MetaField, QueryParams
+from requests import Response
 
 # TODO: Implement verbose output logic
-
-_ANCHOR = "a"
-_DIVISION = "div"
-_HYPERTEXT_REF = "href"
-_LIST_ITEM = "li"
-_TABLE = "table"
-_TABLE_DATA = "td"
-_TABLE_HEADER = "th"
-_TABLE_ROW = "tr"
-
-_SEARCH_URI = "https://www.rfc-editor.org/search/rfc_search_detail.php"
 
 
 class WebScraper:
     """
     RFC specification web scraper.
     """
-    def __init__(self, params: QueryParams, list_results: bool = False) -> None:
+    def __init__(self, params: QueryParams, list_results: bool = False) -> void_t:
         """
         Initialize the object.
         """
@@ -40,13 +36,13 @@ class WebScraper:
         self.ListResults: bool = list_results
         self.Valid: bool = True
 
-    def search(self) -> None:
+    def search(self) -> void_t:
         """
         Use the RFC web search functionality to find the specification(s)
         matching the criteria in the underlying query parameters.
         """
         self.Params.validate()
-        resp = self._send_request(_SEARCH_URI)
+        resp = self._send_request(SEARCH_URI)
 
         # Search web request succeeded
         if resp.ok:
@@ -74,22 +70,22 @@ class WebScraper:
         """
         file_dict = dict[str, str]()
 
-        for anchor_data in anchors[MetaField.FILES].find_all(_ANCHOR):
-            file_dict[anchor_data.text] = anchor_data.attrs[_HYPERTEXT_REF]
+        for anchor_data in anchors[MetaField.FILES].find_all(A_TAG):
+            file_dict[anchor_data.text] = anchor_data.attrs[HREF_ATTR]
 
         return file_dict
 
     @staticmethod
-    def _extract_spec_metadata(table_row: BeautifulSoup) -> Metadata | None:
+    def _extract_spec_metadata(table_row: BeautifulSoup) -> Metadata | void_t:
         """
         Extract RFC specification metadata from the given table row element.
         """
-        cells = table_row.find_all(_TABLE_DATA)
-        spec_url_data = table_row.find(_ANCHOR)
+        cells = table_row.find_all(TD_TAG)
+        spec_url_data = table_row.find(A_TAG)
 
         metadata = None
 
-        if cells and len(cells) == 7:
+        if spec_url_data and cells and len(cells) == 7:
             metadata = Metadata(rfc_id=int(spec_url_data.text.strip().split()[1]),
                                 files=WebScraper._extract_doc_links(cells),
                                 title=cells[MetaField.TITLE].text.strip(),
@@ -97,12 +93,12 @@ class WebScraper:
                                 date=cells[MetaField.DATE].text.strip(),
                                 more_info=cells[MetaField.MORE_INFO].text.strip(),
                                 status=cells[MetaField.STATUS].text.strip(),
-                                page_url=spec_url_data.attrs[_HYPERTEXT_REF])
+                                page_url=spec_url_data.attrs[HREF_ATTR])
 
         return metadata
 
     @staticmethod
-    def _make_table(table_rows: list[Metadata]) -> list[tuple[Any, Any, Any]]:
+    def _make_table(table_rows: list[Metadata]) -> list[tuple[any_t, any_t, any_t]]:
         """
         Create a list of RFC specification search results from the
         given list of specification metadata.
@@ -120,7 +116,7 @@ class WebScraper:
         request to the given URL.
         """
         if not utils.valid_url(url):
-            raise ValueError(f"Invalid URL specified: '{url}'")
+            raise ValueError(f"Invalid URL specified: '{url}'.")
 
         spec_content = ""
         resp = self._send_request(url)
@@ -139,24 +135,24 @@ class WebScraper:
         Extract RFC specification metadata from the given HTML search results data.
         """
         if not raw_html_data:
-            raise ValueError(f"The given HTML data cannot be null or empty")
+            raise ValueError(f"The given HTML data cannot be null or empty.")
 
         metadata_list = list[Metadata]()
         html_data = BeautifulSoup(raw_html_data, "html.parser")
-        table_data = html_data.find(_TABLE, class_="gridtable")
+        table_data = html_data.find(TABLE_TAG, class_="gridtable")
 
         # Extract specification metadata from each table row
         if table_data:
-            for table_row in table_data.find_all(_TABLE_ROW):
-                if not table_row.find(_TABLE_HEADER):
+            for table_row in table_data.find_all(TR_TAG):
+                if not table_row.find(TH_TAG):
                     metadata = self._extract_spec_metadata(table_row)
 
                     if metadata:
                         metadata_list.append(metadata)
 
         # Web search error(s) occurred
-        elif html_data.find(_DIVISION, class_="errors"):
-            errors = html_data.find_all(_LIST_ITEM)
+        elif html_data.find(DIV_TAG, class_="errors"):
+            errors = html_data.find_all(LI_TAG)
 
             for error_data in errors:
                 self.Valid = False
@@ -169,18 +165,14 @@ class WebScraper:
 
         return metadata_list
 
-    def _send_request(self, url: str) -> Response | None:
+    def _send_request(self, url: str) -> Response:
         """
         Send an HTTP GET request to the server with the underlying query parameters.
         """
         if not utils.valid_url(url):
-            raise ValueError(f"Invalid URL specified: '{url}'")
+            raise ValueError(f"Invalid URL specified: '{url}'.")
 
         resp = requests.get(url, self.Params.dict())
         resp.close()
 
         return resp
-
-
-# Module export symbols
-__all__ = ["WebScraper"]

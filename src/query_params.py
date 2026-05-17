@@ -1,14 +1,41 @@
 """
 HTTP RFC specification lookup query parameters module.
 """
-import enum
+from alias import void_t
 from datetime import datetime
+from enum import IntEnum, StrEnum, unique
 
-from utils import MetaFieldName
+
+@unique
+class MetaField(IntEnum):
+    """
+    RFC specification metadata field integral enumeration.
+    """
+    ID = 0
+    FILES = 1
+    TITLE = 2
+    AUTHORS = 3
+    DATE = 4
+    MORE_INFO = 5
+    STATUS = 6
 
 
-@enum.unique
-class Sorting(enum.StrEnum):
+@unique
+class MetaFieldName(StrEnum):
+    """
+    RFC specification metadata field name string enumeration.
+    """
+    ID = "Number"
+    FILES = "Files"
+    TITLE = "Title"
+    AUTHORS = "Authors"
+    DATE = "Date"
+    MORE_INFO = "More Info"
+    STATUS = "Status"
+
+
+@unique
+class Sorting(StrEnum):
     """
     RFC specification search results sorting direction.
     """
@@ -20,13 +47,15 @@ class QueryParams:
     """
     HTTP RFC specification lookup query parameters.
     """
-    def __init__(self,
-                 rfc_id: int,
-                 title: str,
-                 from_year: int = 1968,
-                 to_year: int = datetime.now().year,
-                 sort_by: MetaFieldName = MetaFieldName.ID,
-                 sorting: Sorting = Sorting.ASCENDING) -> None:
+    def __init__(
+        self,
+        rfc_id: int,
+        title: str,
+        from_year: int = 1968,
+        to_year: int = datetime.now().year,
+        sort_by: MetaFieldName = MetaFieldName.ID,
+        sorting: Sorting = Sorting.ASCENDING
+    ) -> void_t:
         """
         Initialize the object.
         """
@@ -69,14 +98,9 @@ class QueryParams:
             "to_year": str(self.ToYear)
         }
 
-    def validate(self) -> None:
+    def validate(self) -> void_t:
         """
         Validate the underlying query parameters.
         """
         if not self.Id and not self.Title:
-            error_msg = f"RFC specification number or title must be specified"
-            raise RuntimeError(error_msg)
-
-
-# Module export symbols
-__all__ = ["QueryParams"]
+            raise RuntimeError(f"RFC specification ID or title must be specified.")
